@@ -1,6 +1,6 @@
 # MLOpsZoom
 
-This is an example
+Quick notes
 
 For homework 2:
 pip install mlflow
