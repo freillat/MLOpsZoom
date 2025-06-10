@@ -7,6 +7,11 @@ import mlflow
 from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
 
+EXPERIMENT_NAME = "HW3"
+
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_experiment(EXPERIMENT_NAME)
+
 df= pd.read_parquet("yellow_tripdata_2023-03.parquet")
 print(df.shape)
 
@@ -26,7 +31,7 @@ def read_dataframe(filename):
 df = read_dataframe("yellow_tripdata_2023-03.parquet")
 print(df.shape)
 
-def train(df):
+with mlflow.start_run():
     categorical = ['PULocationID', 'DOLocationID']
     train_dicts = df[categorical].to_dict(orient='records')
     dv = DictVectorizer(sparse=True)
@@ -34,42 +39,11 @@ def train(df):
     y_train = df['duration'].values
     lr = LinearRegression()
     lr.fit(X_train, y_train)
-    return dv, lr
-
-dv, lr = train(df)
-print("hello")
-print("Intercept:", lr.intercept_)
-# y_pred = lr.predict(X_train)
-
-def run_register_model(data_path: str, top_n: int):
-
-    client = MlflowClient()
-
-    # Retrieve the top_n model runs and log the models
-    experiment = client.get_experiment_by_name(HPO_EXPERIMENT_NAME)
-    runs = client.search_runs(
-        experiment_ids=experiment.experiment_id,
-        run_view_type=ViewType.ACTIVE_ONLY,
-        max_results=top_n,
-        order_by=["metrics.rmse ASC"]
+    model_artifact_path = "hw3_model"
+    mlflow.sklearn.log_model(
+        sk_model=lr,
+        artifact_path=model_artifact_path,
+        registered_model_name="HW3Model"
     )
-    for run in runs:
-        train_and_log_model(data_path=data_path, params=run.data.params)
-
-    # Select the model with the lowest test RMSE
-    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-    best_run = client.search_runs(
-        experiment_ids=experiment.experiment_id,
-        run_view_type=ViewType.ACTIVE_ONLY,
-        max_results=top_n,
-        order_by=["metrics.test_rmse ASC"]
-    )[0]
-    run_id = best_run.info.run_id
-    model_uri = f"runs:/{run_id}/model"
-
-    # Register the best model
-    mlflow.register_model(model_uri, "best model")
-
-
-# if __name__ == '__main__':
-#     run_register_model()
+    
+print("Intercept:", lr.intercept_)
