@@ -17,3 +17,6 @@ Question 5
 
 to get the size of the file after running pytest /tests/integration_test.py
 aws s3 ls s3://nyc-duration/in/ --endpoint-url=http://localhost:4566
+
+Question 6
+use -s option when running pytest to show the mean

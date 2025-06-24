@@ -31,3 +31,6 @@ def test_prepare_data():
     categorical = ['PULocationID', 'DOLocationID']    
     df_result = batch.prepare_data(df, categorical)    
     assert df_result.equals(df_output)
+
+def test_get_duration():
+    df_result = batch.main(2023, 1)
