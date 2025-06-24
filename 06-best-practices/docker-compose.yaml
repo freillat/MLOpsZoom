@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  localstack:
+    container_name: localstack_main
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4510-4559:4510-4559"  # external port for individual services
+      - "127.0.0.1:4566:4566"            # default LocalStack gateway port
+    environment:
+      - SERVICES=s3                    # Only run S3 service
+      - DEFAULT_REGION=us-east-1       # Set a default region (good practice)
+      - DOCKER_HOST=unix:///var/run/docker.sock # Required on some systems for internal Docker access
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./localstack-data}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock" # To allow LocalStack to create resources
